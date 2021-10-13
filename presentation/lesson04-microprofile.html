@@ -149,6 +149,47 @@ _DEV_QUARKUS_HTTP_PORT=8181</code></pre>
 <div class="paragraph"><p><a href="https://quarkus.io/guides/config">Guide: Quarkus - Configuring your application</a></p></div></section></section>
 <section id="_2_health"><h2>2. Health</h2><div class="paragraph"><p>Motivation</p></div>
 <div class="ulist"><ul><li><p>Monitoring ermöglichen (icinga, nagios, &#8230;&#8203;)</p></li><li><p>Monitoring durch Application-Server (kubernetes, &#8230;&#8203;)</p></li><li><p>Steuerung durch Application-Server</p></li></ul></div></section>
+<section id="_2_health_klassischer_health_check_deprecated"><h2>2. Health: Klassischer Health-Check (deprecated)</h2><div class="paragraph"><p>Dependency</p></div>
+<pre class="CodeRay listingblock"><code class="xml language-xml"><span class="tag">&lt;dependency&gt;</span>
+  <span class="tag">&lt;groupId&gt;</span>io.quarkus<span class="tag">&lt;/groupId&gt;</span>
+  <span class="tag">&lt;artifactId&gt;</span>quarkus-smallrye-health<span class="tag">&lt;/artifactId&gt;</span>
+<span class="tag">&lt;/dependency&gt;</span></code></pre>
+<div class="paragraph"><p>Implementierung</p></div>
+<pre class="CodeRay listingblock"><code class="java language-java"><span class="annotation">@Health</span>
+<span class="annotation">@ApplicationScoped</span>
+<span class="directive">public</span> <span class="type">class</span> <span class="class">OldStyleHealthCheck</span> <span class="directive">implements</span> HealthCheck {
+
+    <span class="annotation">@Override</span>
+    <span class="directive">public</span> HealthCheckResponse call() {
+        <span class="type">double</span> dice = <span class="predefined-type">Math</span>.random();
+        HealthCheckResponseBuilder builder = HealthCheckResponse.named(<span class="string"><span class="delimiter">&quot;</span><span class="content">dice</span><span class="delimiter">&quot;</span></span>);
+        <span class="keyword">if</span>(dice &gt;= <span class="float">0.5</span>) {
+            builder.up();
+        } <span class="keyword">else</span> {
+            builder.down().withData(<span class="string"><span class="delimiter">&quot;</span><span class="content">valueOfDice</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> + dice);
+        }
+        <span class="keyword">return</span> builder.build();
+    }
+}</code></pre>
+<div class="paragraph"><p>Vor Microprofile 3.0</p></div></section>
+<section id="_2_health_klassischer_health_check_deprecated_2"><h2>2. Health: Klassischer Health-Check (deprecated)</h2><div class="paragraph heading"><p>Aufruf des Checks</p></div>
+<div class="paragraph"><p><code>curl <a href="http://127.0.0.1:8080/q/health" class="bare">http://127.0.0.1:8080/q/health</a></code></p></div>
+<pre class="CodeRay listingblock"><code class="json language-json">{
+    <span class="key"><span class="delimiter">&quot;</span><span class="content">status</span><span class="delimiter">&quot;</span></span>: <span class="string"><span class="delimiter">&quot;</span><span class="content">DOWN</span><span class="delimiter">&quot;</span></span>,
+    <span class="key"><span class="delimiter">&quot;</span><span class="content">checks</span><span class="delimiter">&quot;</span></span>: [
+        {
+            <span class="key"><span class="delimiter">&quot;</span><span class="content">name</span><span class="delimiter">&quot;</span></span>: <span class="string"><span class="delimiter">&quot;</span><span class="content">dice</span><span class="delimiter">&quot;</span></span>,
+            <span class="key"><span class="delimiter">&quot;</span><span class="content">status</span><span class="delimiter">&quot;</span></span>: <span class="string"><span class="delimiter">&quot;</span><span class="content">DOWN</span><span class="delimiter">&quot;</span></span>,
+            <span class="key"><span class="delimiter">&quot;</span><span class="content">data</span><span class="delimiter">&quot;</span></span>: {
+                <span class="key"><span class="delimiter">&quot;</span><span class="content">valueOfDice</span><span class="delimiter">&quot;</span></span>: <span class="string"><span class="delimiter">&quot;</span><span class="content">0.19585549288164417</span><span class="delimiter">&quot;</span></span>
+            }
+        },
+        {
+            <span class="key"><span class="delimiter">&quot;</span><span class="content">name</span><span class="delimiter">&quot;</span></span>: <span class="string"><span class="delimiter">&quot;</span><span class="content">Database connections health check</span><span class="delimiter">&quot;</span></span>,
+            <span class="key"><span class="delimiter">&quot;</span><span class="content">status</span><span class="delimiter">&quot;</span></span>: <span class="string"><span class="delimiter">&quot;</span><span class="content">UP</span><span class="delimiter">&quot;</span></span>
+        }
+    ]
+}</code></pre></section>
 <section id="_2_health_liveness_and_readiness_checks_microprofile_3_0"><h2>2. Health: Liveness and Readiness checks (Microprofile 3.0)</h2><div class="paragraph"><p>Konzept:</p></div>
 <div class="ulist"><ul><li><p><strong>Readiness</strong>: Der Service kann aktuell (temporär) Daten verarbeiten / nicht verarbeiten.</p></li><li><p><strong>Liveness</strong>: Der Service is grundsätzlich aktiv oder dauerhaft nicht erreichbar.</p></li></ul></div>
 <div class="paragraph"><p>Eigenschaften:</p></div>
